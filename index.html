@@ -11,6 +11,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sim Casino - Professional Edition</title>
     <style>
+        /* ========================= */
+/* MOBILE RESPONSIVE FIXES   */
+/* ========================= */
+
+@media (max-width: 768px) {
+
+    :root {
+        --wheel-size: 260px;
+    }
+
+    body {
+        overflow-x: hidden;
+    }
+
+    /* Main menu */
+    .casino-title {
+        font-size: 2.2rem;
+        letter-spacing: 2px;
+    }
+
+    .game-grid {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .game-card {
+        width: 85%;
+        height: 250px;
+    }
+
+    /* Blackjack */
+    .bj-table {
+        width: 100%;
+        height: auto;
+        border-radius: 200px 200px 20px 20px;
+        padding: 20px 10px;
+    }
+
+    .card {
+        width: 55px;
+        height: 80px;
+        font-size: 0.8rem;
+    }
+
+    .card-row {
+        height: 90px;
+        gap: 5px;
+    }
+
+    #player-hands-container {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .history-panel {
+        width: 100%;
+        height: auto;
+    }
+
+    /* Roulette */
+    .table-container {
+        transform: scale(0.85);
+        transform-origin: top center;
+    }
+
+    .grid {
+        grid-template-columns: repeat(12, 35px);
+        grid-template-rows: repeat(3, 35px);
+    }
+
+    .cell {
+        height: 35px;
+        font-size: 0.8rem;
+    }
+
+    .zero {
+        width: 40px;
+        font-size: 0.8rem;
+    }
+
+    .outside-row {
+        height: 35px;
+        font-size: 0.8rem;
+    }
+
+    /* Slots */
+    .reel-column {
+        width: 70px;
+        height: 90px;
+    }
+
+    .symbol {
+        height: 90px;
+        font-size: 40px;
+    }
+
+    .slots-container {
+        padding: 20px;
+        width: 95%;
+    }
+
+    /* Buttons */
+    .spin-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+
+    .stats {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+
+    input[type="number"] {
+        width: 80px;
+    }
+
+}
         :root {
             --casino-green: #1a5e3a;
             --felt-green: #247345;
