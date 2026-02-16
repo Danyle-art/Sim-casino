@@ -3,236 +3,300 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sim Casino - Mobile</title>
+    <title>Sim Casino Mobile</title>
     
     <link rel="manifest" href="manifest.json">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#0b0b0b">
-    <link rel="apple-touch-icon" href="https://via.placeholder.com/192/d4af37/000000?text=Casino">
 
     <style>
         :root {
-            --casino-green: #1a5e3a;
-            --felt-green: #247345;
             --gold: #d4af37;
             --red: #c41e3a;
             --black: #1a1a1a;
-            --wheel-size: 300px; /* Slightly smaller for mobile */
+            --casino-green: #1a5e3a;
         }
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #0b0b0b; color: white; overflow-x: hidden;
-            touch-action: manipulation; /* Prevents accidental zooming */
+            background-color: #0b0b0b; color: white;
+            font-family: sans-serif; overflow: hidden; /* Prevent bouncing */
         }
 
-        /* --- MAIN MENU --- */
+        /* --- COMPACT MENU --- */
         #main-menu {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            min-height: 100vh; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); text-align: center;
-            padding: 20px;
+            height: 100vh; padding: 10px; box-sizing: border-box;
         }
-        .casino-title {
-            font-size: 2.5rem; color: var(--gold); text-transform: uppercase; letter-spacing: 3px;
-            margin-bottom: 10px; text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
-        }
-        .welcome-text { font-size: 1rem; color: #ccc; margin-bottom: 30px; }
-        
-        /* Mobile Game Grid */
-        .game-grid { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            width: 100%;
-            max-width: 350px;
-        }
-        
+        .casino-title { font-size: 2rem; color: var(--gold); margin: 0; }
+        .game-grid { display: flex; flex-direction: column; gap: 10px; width: 90%; margin-top: 20px; }
         .game-card {
-            width: 100%; height: 150px; background: #222; border: 2px solid #444; border-radius: 15px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; position: relative; overflow: hidden;
+            height: 80px; background: #222; border: 1px solid var(--gold);
+            border-radius: 10px; display: flex; align-items: center; 
+            padding: 0 20px; position: relative; overflow: hidden;
         }
+        .game-card h3 { z-index: 2; margin: 0; font-size: 1.4rem; }
+        .card-bg { position: absolute; right: 0; width: 50%; height: 100%; opacity: 0.4; background-size: cover; }
 
-        .card-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover; background-position: center; z-index: 1; opacity: 0.6;
+        /* --- GAME CONTAINERS --- */
+        #game-view, #slots-view, #bj-view {
+            display: none; flex-direction: column; align-items: center;
+            height: 100vh; width: 100vw; padding-top: 50px; box-sizing: border-box;
         }
+        .back-btn { position: absolute; top: 10px; left: 10px; padding: 8px; z-index: 100; background: #333; color: white; border: none; border-radius: 5px; }
 
-        .game-card::before { 
-            content: ''; position: absolute; inset: 0; 
-            background: rgba(0,0,0,0.4); 
-            z-index: 2;
+        /* --- MOBILE SCALING LOGIC --- */
+        .scaler {
+            transform: scale(0.8); /* Default shrink */
+            display: flex; flex-direction: column; align-items: center;
         }
-        
-        .game-card h3 { position: relative; z-index: 3; font-size: 1.8rem; margin: 0; color: var(--gold); text-shadow: 2px 2px 4px black; }
+        @media (max-width: 400px) { .scaler { transform: scale(0.65); } }
 
-        /* General View Adjustments */
-        #game-view, #slots-view, #bj-view { 
-            display: none; flex-direction: column; align-items: center; 
-            padding: 10px; padding-top: 60px; min-height: 100vh; box-sizing: border-box;
-        }
+        /* Roulette Specific */
+        .wheel-outer { width: 250px; height: 250px; border: 8px solid #444; border-radius: 50%; position: relative; margin-bottom: 10px; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; }
+        .table-container { background: var(--casino-green); padding: 5px; border: 2px solid #5d4037; }
+        .grid { display: grid; grid-template-columns: repeat(12, 28px); grid-template-rows: repeat(3, 35px); gap: 1px; background: white; }
+        .cell { width: 28px; height: 35px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; background: var(--casino-green); position: relative;}
+        .zero { width: 30px; border: 1px solid white; background: green; display: flex; align-items: center; justify-content: center; }
 
-        .back-btn { position: fixed; top: 10px; left: 10px; background: #333; color: white; border: none; padding: 8px 15px; border-radius: 5px; z-index: 100; }
-
-        /* --- ROULETTE MOBILE --- */
-        .wheel-outer { 
-            position: relative; width: var(--wheel-size); height: var(--wheel-size); 
-            border: 8px solid #444; border-radius: 50%; background: #222; 
-            margin-bottom: 20px; flex-shrink: 0;
-        }
-        #wheel { position: absolute; width: 100%; height: 100%; border-radius: 50%; }
-        .spoke { position: absolute; width: 25px; height: 50%; left: 50%; transform-origin: bottom center; margin-left: -12.5px; display: flex; justify-content: center; padding-top: 5px; }
-        .num-text { font-size: 12px; }
-
-        /* Vertical Table for Mobile */
-        .table-container { 
-            display: flex; flex-direction: column; 
-            transform: scale(0.9); /* Scale to fit width */
-            margin-top: -10px;
-        }
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 3 columns wide for vertical layout */
-            gap: 1px; 
-            background: white; 
-        }
-        .cell { height: 45px; width: 80px; }
-
-        /* --- BLACKJACK MOBILE --- */
+        /* Blackjack Specific */
         .bj-table { 
-            background: radial-gradient(circle, #2e8b57 0%, #1a5e3a 100%); 
-            width: 95vw; height: 400px; 
-            border-radius: 40px; border: 10px solid #2b1d0e; 
-            position: relative; margin-top: 10px; 
-            display: flex; flex-direction: column; align-items: center; justify-content: space-around;
+            width: 350px; height: 320px; background: green; border-radius: 150px 150px 20px 20px; 
+            border: 8px solid #2b1d0e; display: flex; flex-direction: column; align-items: center; justify-content: space-around;
         }
-        .card { width: 60px; height: 85px; font-size: 0.8rem; }
-        .card-row { height: 90px; }
+        .card { width: 45px; height: 65px; background: white; color: black; border-radius: 4px; font-size: 12px; padding: 2px; }
 
-        /* --- SLOTS MOBILE --- */
-        .slots-container { 
-            width: 90vw; padding: 15px; border-width: 4px;
-        }
-        .reels-window { gap: 5px; padding: 10px; height: 100px; }
-        .reel-column { width: 30%; height: 100px; }
-        .symbol { height: 100px; font-size: 40px; }
-
-        /* History and Controls */
-        .history-panel { width: 95vw; height: 100px; margin-top: 15px; }
-        .chip-selector { gap: 8px; padding: 8px 15px; }
-        .chip-opt { width: 40px; height: 40px; font-size: 0.8rem; }
-        .spin-btn { padding: 10px 30px; font-size: 1rem; }
-        
-        .stats { font-size: 1rem; gap: 20px; margin-bottom: 10px; }
+        /* Controls */
+        .controls { margin-top: 10px; display: flex; gap: 5px; }
+        .spin-btn { background: var(--gold); border: none; padding: 10px 20px; font-weight: bold; border-radius: 5px; }
+        .chip-selector { display: flex; gap: 5px; margin: 10px 0; }
+        .chip-opt { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; border: 2px solid transparent; }
+        .chip-opt.selected { border-color: white; transform: scale(1.1); }
+        .c5 { background: blue; } .c10 { background: red; } .c50 { background: green; }
     </style>
 </head>
 <body>
+
     <div id="main-menu">
-        <h1 class="casino-title">Sim Casino</h1>
-        <p class="welcome-text">Mobile Edition</p>
+        <h1 class="casino-title">SIM CASINO</h1>
         <div class="game-grid">
             <div class="game-card" onclick="startGame('roulette')">
                 <div class="card-bg" style="background-image: url('roullette.jfif');"></div>
-                <h3>Roulette</h3>
+                <h3>ROULETTE</h3>
             </div>
             <div class="game-card" onclick="startGame('blackjack')">
                 <div class="card-bg" style="background-image: url('blackjack.jfif');"></div>
-                <h3>Blackjack</h3>
+                <h3>BLACKJACK</h3>
             </div>
             <div class="game-card" onclick="startGame('slots')">
                 <div class="card-bg" style="background-image: url('slot_machine.jfif');"></div>
-                <h3>Slots</h3>
-            </div>
-        </div>
-    </div>
-
-    <div id="bj-view">
-        <button class="back-btn" onclick="showMenu()">← Menu</button>
-        <div class="stats"><div>Balance: <span class="bal-display" style="color:#0f0">$1000</span></div></div>
-        <div id="bj-msg">GOOD LUCK</div>
-        <div class="bj-table">
-            <div class="bj-score">DEALER: <span id="d-score">?</span></div>
-            <div class="card-row" id="dealer-cards"></div>
-            <div id="player-hands-container" style="display:flex; gap:20px; z-index:2;">
-                <div style="display:flex; flex-direction:column; align-items:center;">
-                    <div class="card-row" id="player-cards"></div>
-                    <div class="bj-score">PLAYER: <span id="p-score">0</span></div>
-                </div>
-                <div id="split-hand-container" style="display:none; flex-direction:column; align-items:center;">
-                    <div class="card-row" id="player-cards-split"></div>
-                    <div class="bj-score">SPLIT: <span id="p-score-split">0</span></div>
-                </div>
-            </div>
-        </div>
-        <div style="margin-top: 15px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
-            <div id="bj-controls">
-                <input type="number" id="bj-bet" style="background:#222; color:var(--gold); border:2px solid var(--gold); padding:8px; width:80px; text-align:center;" value="50">
-                <button class="spin-btn" onclick="startBJ()">DEAL</button>
-            </div>
-            <div id="bj-actions" style="display:none; gap: 5px;">
-                <button class="spin-btn" onclick="bjHit()">HIT</button>
-                <button class="spin-btn" style="background:#444;" onclick="bjStand()">STAND</button>
-                <button id="bj-double" class="spin-btn" style="background:#8a6d3b; padding: 10px 15px;" onclick="bjDouble()">DBL</button>
+                <h3>SLOTS</h3>
             </div>
         </div>
     </div>
 
     <div id="game-view">
-        <button class="back-btn" onclick="showMenu()">← Menu</button>
-        <div id="msg">Place Bets</div>
-        <div class="stats">
-            <div class="bal-display" style="color:#0f0">$1000</div>
-            <div id="total-bet" style="color:var(--gold)">$0</div>
-        </div>
-        <div class="wheel-outer">
-            <div id="wheel"></div>
-            <div id="ball-track" class="ball-track"><div id="ball"></div></div>
-        </div>
-        <div class="chip-selector">
-            <div class="chip-opt c5 selected" onclick="selectChip(5, this)">5</div>
-            <div class="chip-opt c10" onclick="selectChip(10, this)">10</div>
-            <div class="chip-opt c50" onclick="selectChip(50, this)">50</div>
-            <div class="chip-opt c100" onclick="selectChip(100, this)">100</div>
-        </div>
-        <div class="table-container">
-            <div class="main-row">
-                <div class="zero" id="b-0" onclick="placeBet('number', 0, 'b-0')" style="width: 100%; height: 40px; border: 1px solid white; margin-bottom: 2px;">0</div>
+        <button class="back-btn" onclick="showMenu()">← BACK</button>
+        <div class="scaler">
+            <div id="msg">PLACE BETS</div>
+            <div class="wheel-outer">
+                <div id="wheel"></div>
+                <div id="ball-track" style="position:absolute; width:100%; height:100%;"><div id="ball" style="position:absolute; width:10px; height:10px; background:white; border-radius:50%; top:40px; left:50%;"></div></div>
             </div>
-            <div class="grid" id="grid"></div>
-            <div class="outside-row" style="margin-top: 5px;">
-                <div class="out-btn" id="b-red" onclick="placeOutside('red', 'black', 'b-red')" style="background:var(--red); height: 40px;">RED</div>
-                <div class="out-btn" id="b-black" onclick="placeOutside('black', 'red', 'b-black')" style="background:var(--black); height: 40px;">BLK</div>
+            <div class="chip-selector">
+                <div class="chip-opt c5 selected" onclick="selectChip(5, this)">5</div>
+                <div class="chip-opt c10" onclick="selectChip(10, this)">10</div>
+                <div class="chip-opt c50" onclick="selectChip(50, this)">50</div>
             </div>
+            <div class="table-container">
+                <div style="display:flex;">
+                    <div class="zero" onclick="placeBet('number', 0, 'b-0')" id="b-0">0</div>
+                    <div class="grid" id="grid"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="spin-btn" id="spin-btn" onclick="startSpin()">SPIN</button>
+                <button class="spin-btn" style="background:#444" onclick="clearBets()">CLEAR</button>
+            </div>
+            <div style="margin-top:10px">Balance: <span class="bal-display">$1000</span></div>
         </div>
-        <div style="margin-top: 15px; display: flex; gap: 10px;">
-            <button class="spin-btn" id="spin-btn" onclick="startSpin()">SPIN</button>
-            <button class="spin-btn" style="background:#444;" onclick="clearBets()">CLR</button>
+    </div>
+
+    <div id="bj-view">
+        <button class="back-btn" onclick="showMenu()">← BACK</button>
+        <div class="scaler">
+            <div id="bj-msg">DEAL TO START</div>
+            <div class="bj-table">
+                <div id="dealer-cards" style="display:flex; gap:5px; height:70px;"></div>
+                <div id="player-cards" style="display:flex; gap:5px; height:70px;"></div>
+            </div>
+            <div class="controls">
+                <div id="bj-controls">
+                    <button class="spin-btn" onclick="startBJ()">DEAL ($50)</button>
+                </div>
+                <div id="bj-actions" style="display:none; gap:5px;">
+                    <button class="spin-btn" onclick="bjHit()">HIT</button>
+                    <button class="spin-btn" style="background:#444" onclick="bjStand()">STAND</button>
+                </div>
+            </div>
+            <div style="margin-top:10px">Balance: <span class="bal-display">$1000</span></div>
         </div>
     </div>
 
     <div id="slots-view">
-        <button class="back-btn" onclick="showMenu()">← Menu</button>
-        <div class="stats"><div class="bal-display" style="color:#0f0">$1000</div></div>
-        <div class="slots-container">
-            <div id="slot-msg">PULL LEVER</div>
-            <div class="reels-window">
-                <div class="reel-column"><div class="reel-strip" id="strip1"></div></div>
-                <div class="reel-column"><div class="reel-strip" id="strip2"></div></div>
-                <div class="reel-column"><div class="reel-strip" id="strip3"></div></div>
+        <button class="back-btn" onclick="showMenu()">← BACK</button>
+        <div class="scaler">
+            <div id="slot-msg">READY</div>
+            <div style="display:flex; gap:10px; background:#222; padding:20px; border:4px solid var(--gold); border-radius:10px;">
+                <div id="s1" style="font-size:3rem">❓</div>
+                <div id="s2" style="font-size:3rem">❓</div>
+                <div id="s3" style="font-size:3rem">❓</div>
             </div>
-            <div style="margin-top: 20px;">
-                <input type="number" id="slot-bet" style="background:#222; color:var(--gold); border:2px solid var(--gold); padding:8px; width:60px; text-align:center;" value="10">
-                <button class="spin-btn" id="slot-spin-btn" onclick="startSlots()">SPIN</button>
+            <div class="controls">
+                <button class="spin-btn" id="slot-spin-btn" onclick="startSlots()">SPIN ($10)</button>
             </div>
+            <div style="margin-top:10px">Balance: <span class="bal-display">$1000</span></div>
         </div>
     </div>
 
     <script>
-        // [PASTE THE SAME JAVASCRIPT LOGIC FROM THE PREVIOUS MESSAGE HERE]
-        // (Ensure you include the initGame, startBJ, startSpin, etc. functions)
+        // SERVICE WORKER
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+
+        // SHARED STATE
+        let balance = 1000;
+        let isSpinning = false;
+        const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+        const numbers = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+        
+        function updateHUD() {
+            document.querySelectorAll('.bal-display').forEach(el => el.innerText = `$${balance}`);
+        }
+
+        function showMenu() {
+            document.getElementById('main-menu').style.display = 'flex';
+            document.getElementById('game-view').style.display = 'none';
+            document.getElementById('bj-view').style.display = 'none';
+            document.getElementById('slots-view').style.display = 'none';
+        }
+
+        function startGame(game) {
+            document.getElementById('main-menu').style.display = 'none';
+            if(game === 'roulette') { document.getElementById('game-view').style.display = 'flex'; initRoulette(); }
+            if(game === 'blackjack') { document.getElementById('bj-view').style.display = 'flex'; }
+            if(game === 'slots') { document.getElementById('slots-view').style.display = 'flex'; }
+            updateHUD();
+        }
+
+        // --- ROULETTE LOGIC ---
+        let currentChip = 5; let bets = {};
+        function initRoulette() {
+            const wheel = document.getElementById('wheel');
+            if(wheel.innerHTML !== "") return;
+            numbers.forEach((n, i) => {
+                const s = document.createElement('div');
+                s.style.position = 'absolute'; s.style.width = '20px'; s.style.height = '50%';
+                s.style.left = '50%'; s.style.marginLeft = '-10px'; s.style.transformOrigin = 'bottom center';
+                s.style.transform = `rotate(${i * (360/37)}deg)`;
+                s.innerHTML = `<span style="font-size:10px; color:${n===0?'#0f0':(reds.includes(n)?'#f22':'#fff')}">${n}</span>`;
+                wheel.appendChild(s);
+            });
+            const grid = document.getElementById('grid');
+            const nums = [3,6,9,12,15,18,21,24,27,30,33,36,2,5,8,11,14,17,20,23,26,29,32,35,1,4,7,10,13,16,19,22,25,28,31,34];
+            nums.forEach(n => {
+                const c = document.createElement('div');
+                c.className = `cell ${reds.includes(n)?'red':'black'}`;
+                c.style.background = reds.includes(n)?'#c41e3a':'#1a1a1a';
+                c.innerText = n;
+                c.onclick = () => placeBet('number', n, c);
+                grid.appendChild(c);
+            });
+        }
+        function selectChip(v, el) { currentChip = v; document.querySelectorAll('.chip-opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); }
+        function placeBet(type, val, el) {
+            if(balance < currentChip) return;
+            balance -= currentChip;
+            bets[val] = (bets[val] || 0) + currentChip;
+            el.style.border = "2px solid gold";
+            updateHUD();
+        }
+        function clearBets() { 
+            Object.values(bets).forEach(v => balance += v); bets = {}; 
+            document.querySelectorAll('.cell').forEach(c => c.style.border = "none");
+            updateHUD(); 
+        }
+        function startSpin() {
+            if(isSpinning || Object.keys(bets).length === 0) return;
+            isSpinning = true;
+            const winIdx = Math.floor(Math.random()*37);
+            const winNum = numbers[winIdx];
+            const rot = 3600 + (winIdx * (360/37));
+            document.getElementById('wheel').style.transition = 'transform 4s cubic-bezier(0.1,0,0.1,1)';
+            document.getElementById('wheel').style.transform = `rotate(-${rot}deg)`;
+            setTimeout(() => {
+                let win = (bets[winNum] || 0) * 36;
+                balance += win;
+                document.getElementById('msg').innerText = `RESULT: ${winNum} (${win > 0 ? 'WIN' : 'LOSE'})`;
+                isSpinning = false; bets = {};
+                document.querySelectorAll('.cell').forEach(c => c.style.border = "none");
+                updateHUD();
+            }, 4000);
+        }
+
+        // --- BLACKJACK LOGIC ---
+        let pHand = [], dHand = [];
+        function startBJ() {
+            if(balance < 50) return;
+            balance -= 50; updateHUD();
+            pHand = [Math.floor(Math.random()*10)+2, Math.floor(Math.random()*10)+2];
+            dHand = [Math.floor(Math.random()*10)+2];
+            document.getElementById('bj-actions').style.display = 'flex';
+            document.getElementById('bj-controls').style.display = 'none';
+            renderBJ();
+        }
+        function renderBJ() {
+            const p = document.getElementById('player-cards'); p.innerHTML = '';
+            pHand.forEach(v => { const c = document.createElement('div'); c.className='card'; c.innerText=v; p.appendChild(c); });
+            const d = document.getElementById('dealer-cards'); d.innerHTML = '';
+            dHand.forEach(v => { const c = document.createElement('div'); c.className='card'; c.innerText=v; d.appendChild(c); });
+            const pSum = pHand.reduce((a,b)=>a+b,0);
+            document.getElementById('bj-msg').innerText = `TOTAL: ${pSum}`;
+            if(pSum > 21) endBJ("BUST!");
+        }
+        function bjHit() { pHand.push(Math.floor(Math.random()*10)+2); renderBJ(); }
+        function bjStand() {
+            while(dHand.reduce((a,b)=>a+b,0) < 17) dHand.push(Math.floor(Math.random()*10)+2);
+            renderBJ();
+            const ps = pHand.reduce((a,b)=>a+b,0), ds = dHand.reduce((a,b)=>a+b,0);
+            if(ds > 21 || ps > ds) { balance += 100; endBJ("YOU WIN!"); }
+            else if(ps === ds) { balance += 50; endBJ("PUSH"); }
+            else endBJ("DEALER WINS");
+        }
+        function endBJ(m) {
+            document.getElementById('bj-msg').innerText = m;
+            document.getElementById('bj-actions').style.display = 'none';
+            document.getElementById('bj-controls').style.display = 'block';
+            updateHUD();
+        }
+
+        // --- SLOTS LOGIC ---
+        function startSlots() {
+            if(balance < 10) return;
+            balance -= 10; updateHUD();
+            const syms = ['🍒','🍋','7','💎'];
+            const r = [syms[Math.floor(Math.random()*4)], syms[Math.floor(Math.random()*4)], syms[Math.floor(Math.random()*4)]];
+            document.getElementById('s1').innerText = '🎰'; document.getElementById('s2').innerText = '🎰'; document.getElementById('s3').innerText = '🎰';
+            setTimeout(() => {
+                document.getElementById('s1').innerText = r[0];
+                document.getElementById('s2').innerText = r[1];
+                document.getElementById('s3').innerText = r[2];
+                if(r[0] === r[1] && r[1] === r[2]) { balance += 100; document.getElementById('slot-msg').innerText = "JACKPOT!"; }
+                else { document.getElementById('slot-msg').innerText = "TRY AGAIN"; }
+                updateHUD();
+            }, 1000);
+        }
     </script>
 </body>
 </html>
